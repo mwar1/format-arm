@@ -7,19 +7,22 @@ function getLastLetter(line: string, pattern: string){
 	var currentWord = "";
 	var currentWhitespace = 0;
 	var foundFirst = false;
-	for (const letter of line) {
-		if (letter == " " || letter == "\t") {
+	for (let i=0; i<line.length; i++) {
+		if (line[i] == " " || line[i] == "\t") {
 			if (foundFirst && currentWord.length > 0) {
 				words.push(currentWord);
 				currentWord = "";
 			}
 
 			currentWhitespace++;
+		} else if (i == line.length - 1) {
+			currentWord += line[i];
+			words.push(currentWord);
 		} else {
 			whitespace += currentWhitespace;
 			currentWhitespace = 0;
 			foundFirst = true;
-			currentWord += letter;
+			currentWord += line[i];
 		}
 	}
 	
@@ -51,12 +54,14 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string) {
 		for (let i=0; i<toReplace.length; i++) {
 			var start = new vscode.Position(toReplace[i][0], toReplace[i][1]);
 
-			if (toReplace[i][2]-1 - maxIndex > 0) {
+			if (toReplace[i][2] > maxIndex) {
 				editBuilder.replace(new vscode.Range(start, new vscode.Position(toReplace[i][0], start.character+toReplace[i][2] - maxIndex - 1)), "");
-			} else if (toReplace[i][2]-1 - maxIndex < 0) {
-				var diff = maxIndex - toReplace[i][1];
+			} else if (toReplace[i][2] < maxIndex) {
+				var diff = maxIndex;
 
-				editBuilder.insert(start, " ".repeat(diff));
+				editBuilder.insert(start, " ".repeat(diff + 1 - toReplace[i][2]));
+			} else {
+				editBuilder.insert(start, " ");
 			}
 		}
 	})
