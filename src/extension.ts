@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 
 function getLastLetter(line: string, pattern: string){
-	var whitespace = 0;
+	let whitespace = 0;
+	let currentWhitespace = 0;
 
-	var words = [];
-	var currentWord = "";
-	var currentWhitespace = 0;
-	var foundFirst = false;
+	let words = [];
+	let currentWord = "";
+	
+	let foundFirst = false;
 	for (let i=0; i<line.length; i++) {
 		if (line[i] == " " || line[i] == "\t") {
 			if (foundFirst && currentWord.length > 0) {
@@ -26,7 +27,7 @@ function getLastLetter(line: string, pattern: string){
 		}
 	}
 	
-	var total = whitespace;
+	let total = whitespace;
 	for (let i=0; i<words.length; i++) {
 		total += words[i].length;
 	}
@@ -39,27 +40,27 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string) {
 	let toReplace: number[][];
 	toReplace = [];
 	
-	var maxIndex = 0;
+	let maxIndex = 0;
 	for (let i=0; i<editor.document.lineCount; i++) {
-		var thisLine = editor.document.lineAt(i).text;
-		var regexMatch = thisLine.match(regexp);
+		let thisLine = editor.document.lineAt(i).text;
+		let regexMatch = thisLine.match(regexp);
 		if (regexMatch) {
 			let index = getLastLetter(regexMatch[0], pattern);
 			toReplace.push([i, index, regexMatch[0].length]);
+
 			if (index > maxIndex) maxIndex = index;
 		}
 	}
 
 	await editor.edit(editBuilder => {
 		for (let i=0; i<toReplace.length; i++) {
-			var start = new vscode.Position(toReplace[i][0], toReplace[i][1]);
+			let start = new vscode.Position(toReplace[i][0], toReplace[i][1]);
 
 			if (toReplace[i][2] > maxIndex) {
-				editBuilder.replace(new vscode.Range(start, new vscode.Position(toReplace[i][0], start.character+toReplace[i][2] - maxIndex - 1)), "");
+				let rangeToRemove = new vscode.Range(start, new vscode.Position(toReplace[i][0], start.character+toReplace[i][2] - maxIndex - 1));
+				editBuilder.replace(rangeToRemove, "");
 			} else if (toReplace[i][2] < maxIndex) {
-				var diff = maxIndex;
-
-				editBuilder.insert(start, " ".repeat(diff + 1 - toReplace[i][2]));
+				editBuilder.insert(start, " ".repeat(maxIndex + 1 - toReplace[i][2]));
 			} else {
 				editBuilder.insert(start, " ");
 			}
@@ -70,8 +71,6 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string) {
 export function activate(context: vscode.ExtensionContext) {
 
 	let disposable = vscode.commands.registerCommand("format-arm.format", async () => {
-		vscode.window.showInformationMessage("Formatting ARM code...");
-
 		let patterns = ["defw", "defb", ";"];
 
 		for (const p of patterns) {
