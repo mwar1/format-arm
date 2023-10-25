@@ -5,6 +5,7 @@ function getLastLetter(line: string, pattern: string){
 
 	var words = [];
 	var currentWord = "";
+	var currentWhitespace = 0;
 	var foundFirst = false;
 	for (const letter of line) {
 		if (letter == " " || letter == "\t") {
@@ -13,8 +14,10 @@ function getLastLetter(line: string, pattern: string){
 				currentWord = "";
 			}
 
-			whitespace++;
+			currentWhitespace++;
 		} else {
+			whitespace += currentWhitespace;
+			currentWhitespace = 0;
 			foundFirst = true;
 			currentWord += letter;
 		}
@@ -29,7 +32,7 @@ function getLastLetter(line: string, pattern: string){
 }
 
 async function alignPattern(editor: vscode.TextEditor, pattern: string) {
-	const regexp = new RegExp(".+(" + pattern + ")", "gmi");
+	const regexp = new RegExp(".*(?=" + pattern + ")", "gmi");
 	let toReplace: number[][];
 	toReplace = [];
 	
@@ -39,7 +42,7 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string) {
 		var regexMatch = thisLine.match(regexp);
 		if (regexMatch) {
 			let index = getLastLetter(regexMatch[0], pattern);
-			toReplace.push([i, index]);
+			toReplace.push([i, index, regexMatch[0].length]);
 			if (index > maxIndex) maxIndex = index;
 		}
 	}
@@ -48,8 +51,13 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string) {
 		for (let i=0; i<toReplace.length; i++) {
 			var start = new vscode.Position(toReplace[i][0], toReplace[i][1]);
 
-			var diff = maxIndex - toReplace[i][1];
-			editBuilder.insert(start, " ".repeat(diff));
+			if (toReplace[i][2]-1 - maxIndex > 0) {
+				editBuilder.replace(new vscode.Range(start, new vscode.Position(toReplace[i][0], start.character+toReplace[i][2] - maxIndex - 1)), "");
+			} else if (toReplace[i][2]-1 - maxIndex < 0) {
+				var diff = maxIndex - toReplace[i][1];
+
+				editBuilder.insert(start, " ".repeat(diff));
+			}
 		}
 	})
 }
