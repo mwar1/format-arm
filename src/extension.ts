@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 
-function getLastLetter(line: string, pattern: string){
+function getLastLetter(line: string, pattern: string) {
+	// Returns the index of the last letter before the pattern being searched for
+	// e.g. when searching for ;
+	// MOV R0, #0 ; comment
+	//          ^ points here
+
 	let whitespace = 0;
 	let currentWhitespace = 0;
 
@@ -36,6 +41,9 @@ function getLastLetter(line: string, pattern: string){
 }
 
 async function alignPattern(editor: vscode.TextEditor, pattern: string, splitByIndent: boolean) {
+	// Aligns all occurences of 'pattern'
+	// If 'splitByIndent' is true, the pattern will be only be aligned with other patterns in the same block of code as itself
+
 	let blocks: number[][];
 	blocks = [];
 	if (splitByIndent) {
@@ -68,10 +76,12 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string, splitByI
 			let thisLine = editor.document.lineAt(i).text;
 			let regexMatch = thisLine.match(patternRegexp);
 
+			// Check for a match with the pattern
 			if (regexMatch) {
 				const whitespaceRegex = new RegExp("^[ \t]*(" + pattern + ")", "gmi");
 				let wsMatch = thisLine.match(whitespaceRegex);
 
+				// Ensure the pattern is not the only thing on the line
 				if (!wsMatch) {
 					let index = getLastLetter(regexMatch[0], pattern);
 					toReplace.push([i, index, regexMatch[0].length]);
@@ -86,9 +96,11 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string, splitByI
 				let start = new vscode.Position(toReplace[i][0], toReplace[i][1]);
 
 				if (toReplace[i][2] > maxIndex) {
+					// Remove spaces if the pattern is too far to the right
 					let rangeToRemove = new vscode.Range(start, new vscode.Position(toReplace[i][0], start.character+toReplace[i][2] - maxIndex - 1));
 					editBuilder.replace(rangeToRemove, "");
 				} else if (toReplace[i][2] < maxIndex) {
+					// Add spaces if the pattern is too far to the left
 					editBuilder.insert(start, " ".repeat(maxIndex + 1 - toReplace[i][2]));
 				} else {
 					editBuilder.insert(start, " ");
