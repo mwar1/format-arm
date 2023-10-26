@@ -3,6 +3,11 @@
   "displayName": "Format ARM",
   "description": "Formats ARM assembly code, ensuring different code elements are properly aligned, such as comments, identifiers, and DEFW blocks.",
   "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode-wordcount.git"
+  },
+  "publisher": "MaxWaring",
   "engines": {
     "vscode": "^1.83.0"
   },
