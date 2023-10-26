@@ -6,9 +6,9 @@ Designed to be used in conjunction with the ARM instruction set used in teaching
 ## Features
 Provides a single command, `Format ARM`, which will align comments and similar blocks of code, such as `DEFW` and `DEFB` blocks. Comments are aligned with other comments in the same label block as themselves, and comments outside any label are aligned together. Furthermore, comments used as seperators, or not at the end of a line of code, are not changed.  
 For example:  
-![Initial code](img/initial.png)
+![Initial code](https://raw.githubusercontent.com/mwar1/format-arm/master/img/initial.png)
 becomes:
-![After formatting](img/aligned.png)
+![After formatting](https://raw.githubusercontent.com/mwar1/format-arm/master/img/aligned.png)
 
 
 ## Release Notes
