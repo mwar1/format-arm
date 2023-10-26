@@ -61,18 +61,23 @@ async function alignPattern(editor: vscode.TextEditor, pattern: string, splitByI
 	
 	const patternRegexp = new RegExp(".*(?=" + pattern + ")", "gmi");
 	for (let b=0; b<blocks.length; b++) {
-		console.log(b);
 		let toReplace: number[][];
 		toReplace = [];
 		let maxIndex = 0;
 		for (let i=blocks[b][0]; i<blocks[b][1]; i++) {
 			let thisLine = editor.document.lineAt(i).text;
 			let regexMatch = thisLine.match(patternRegexp);
-			if (regexMatch) {
-				let index = getLastLetter(regexMatch[0], pattern);
-				toReplace.push([i, index, regexMatch[0].length]);
 
-				if (index > maxIndex) maxIndex = index;
+			if (regexMatch) {
+				const whitespaceRegex = new RegExp("^[ \t]*(" + pattern + ")", "gmi");
+				let wsMatch = thisLine.match(whitespaceRegex);
+
+				if (!wsMatch) {
+					let index = getLastLetter(regexMatch[0], pattern);
+					toReplace.push([i, index, regexMatch[0].length]);
+
+					if (index > maxIndex) maxIndex = index;
+				}
 			}
 		}
 
