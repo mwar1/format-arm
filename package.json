@@ -2,7 +2,7 @@
   "name": "format-arm",
   "displayName": "Format ARM",
   "description": "Formats ARM assembly code, ensuring different code elements are properly aligned, such as comments, identifiers, and DEFW blocks.",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/vscode-wordcount.git"
